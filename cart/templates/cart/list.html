@@ -1,0 +1,190 @@
+{% extends "layout.html" %}
+{% load humanize %}
+
+{%block content %}
+
+<script>
+    function CartItemModifyForm__updateQuantity(el, add) {
+        const $form = $(el).closest('form');
+
+        const $salePrice = $form.find('.cart-item-modify-form__sale-price');
+        const productSalePrice = parseInt($salePrice.attr('data-sale-price'));
+        const $inputNumber = $form.find('input[type="number"]');
+        const oldQuantity = parseInt($inputNumber.val());
+        const originQuantity = parseInt($inputNumber.attr('data-origin-value'));
+        let newQuantity = oldQuantity + add;
+
+        if ( newQuantity > 100 ) {
+            newQuantity = 100;
+        }
+        else if ( newQuantity < 1 ) {
+            newQuantity = 1
+        }
+
+        $inputNumber.val(newQuantity);
+        $salePrice.text((productSalePrice * newQuantity).price_format());
+
+        if ( originQuantity != newQuantity ) {
+            $salePrice.addClass('t-text-red-400');
+        }
+        else {
+            $salePrice.removeClass('t-text-red-400');
+        }
+    }
+
+    function CartItems__allCheckBoxCheckChanged(el) {
+        if ( el.checked ) {
+            $('.cart-items__checkbox-item:not(:checked)').prop('checked', true);
+        }
+        else {
+            $('.cart-items__checkbox-item:checked').prop('checked', false);
+        }
+    }
+
+    function CartItems__itemCheckeChanged(el) {
+        const allCheckBoxNewCheckStatus = $('.cart-items__checkbox-item:not(:checked)').length == 0;
+        $('.cart-items__checkbox-all').prop('checked', allCheckBoxNewCheckStatus);
+    }
+
+    function CartItems__deleteChecked() {
+        const cartItemIds = $('.cart-items__checkbox-item:checked')
+            .map((i, el) => parseInt($(el).attr('data-id')))
+            .toArray();
+
+        if ( cartItemIds.length == 0 ) {
+            alert('삭제할 상품을 선택해주세요.');
+            return;
+        }
+
+        CartItemsDeleteForm.ids.value = cartItemIds;
+        CartItemsDeleteForm.submit();
+    }
+
+
+</script>
+
+<section class="section-cart-item-list">
+    <div class="container">
+        <h1 class="t-font-bold">
+            <i class="fas fa-shopping-cart"></i>
+
+            <span>장바구니</span>
+        </h1>
+
+        {% if cart_items %}
+        <hr>
+
+        <div class="t-mt-[10px]">
+            <label class="t-ml-[17px]">
+                <input type="checkbox" class="cart-items__checkbox-all"
+                       onchange="CartItems__allCheckBoxCheckChanged(this)">
+                전체선택
+            </label>
+        </div>
+        {% endif %}
+
+        <hr>
+
+        {% if cart_items %}
+        <ul>
+            {% for cart_item in cart_items %}
+            <li class="t-py-[20px]">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="t-grid t-grid-cols-1 sm:t-grid-cols-[minmax(171px,_auto)_1fr] lg:t-grid-cols-[171px_1fr_auto] t-gap-3">
+                            <div class="t-flex">
+                                <input data-id="{{cart_item.id}}" type="checkbox" class="cart-items__checkbox-item"
+                                       onchange="CartItems__itemCheckeChanged(this)">
+                                <a href="{% url 'products:detail' cart_item.product_real.product.id %}" class="t-flex-shrink-0 box-border t-flex-grow">
+                                    <img class="t-ml-2 t-w-[250px] t-h-[200px] sm:t-w-[150px] sm:t-h-[150px] t-object-cover rounded"
+                                         src="{{cart_item.product_real.product.thumb_img_url}}" alt="">
+                                </a>
+                            </div>
+                            <div class="t-flex t-flex-col t-items-start">
+                                <div class="badge bg-primary">{{cart_item.product_real.product.market.name}}</div>
+                                <div class="t-mt-[8px]">
+                                    <span class="t-bg-[#ffe812] t-text-xs t-p-1 t-rounded">
+                                        <i class="fas fa-comment"></i>
+                                        <span class="t-font-bold">pay</span>
+                                    </span>
+                                    <a class="t-ml-2"
+                                       href="{% url 'products:detail' cart_item.product_real.product.id %}">
+                                        {{cart_item.product_real.product.display_name}}
+                                    </a>
+                                </div>
+                                <div class="t-mt-[8px]">
+                                    <span class="t-text-gray-500">{{ cart_item.product_real.product.sale_price|intcomma }}원</span>
+                                    <span class="t-line-through t-text-gray-400">{{ cart_item.product_real.product.price|intcomma }}원</span>
+                                </div>
+                                <div class="t-mt-[5px] t-text-gray-500">
+                                    <span>옵션 : </span>
+                                    <span>{{cart_item.product_real.option_1_display_name}}</span>
+                                    <span>/</span>
+                                    <span>{{cart_item.product_real.option_2_display_name}}</span>
+                                    <span class="t-inline-block t-rounded-full t-w-[10px] t-h-[10px]"
+                                          style="background-color:#{{cart_item.product_real.rgb_color}}"></span>
+                                </div>
+                                <div class="t-mt-[5px] t-text-blue-400">
+                                    <span><i class="fas fa-truck"></i> 오후 6시 주문, 당일출고</span>
+                                </div>
+                            </div>
+                            <form class="sm:t-col-span-2 lg:t-col-span-1" method="POST" action="{% url 'cart:modify' cart_item.id %}" class="t-flex t-items-end">
+                                {% csrf_token %}
+                                <div>
+                                    <div class="t-flex t-items-center t-gap-2">
+                                    <span onclick="CartItemModifyForm__updateQuantity(this, -1)">
+                                        <i class="fas fa-minus-circle"></i>
+                                    </span>
+                                        <input name="quantity" readonly min="1" max="100" class="form-control !t-w-[100px]"
+                                               type="number" value="{{cart_item.quantity}}" data-origin-value="{{cart_item.quantity}}">
+                                        <span onclick="CartItemModifyForm__updateQuantity(this, 1)">
+                                        <i class="fas fa-plus-circle"></i>
+                                    </span>
+                                        <button type="submit" class="btn btn-primary btn-sm t-whitespace-nowrap">
+                                            <i class="far fa-edit"></i>
+                                            <span class="t-hidden sm:t-inline">수량수정</span>
+                                        </button>
+                                        <a onclick="if ( !confirm('정말 삭제하시겠습니까?') ) return false;"
+                                           href="{% url 'cart:delete' cart_item.id %}" class="btn btn-danger btn-sm">
+                                            <i class="far fa-trash-alt"></i>
+                                            <span class="t-hidden sm:t-inline">삭제</span>
+                                        </a>
+                                    </div>
+                                    <hr>
+                                    <div class="t-flex-1"></div>
+                                    <div>
+                                        총 가격 :
+                                        {% widthratio cart_item.quantity 1 cart_item.product_real.product.sale_price as total_price %}
+                                        <span class="cart-item-modify-form__sale-price" data-sale-price="{{cart_item.product_real.product.sale_price}}">{{total_price|intcomma}}</span>원
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="t-text-center t-text-gray-400">
+            <i class="far fa-sad-tear"></i>
+            상품이 없습니다.<br>장바구니에 상품을 담아주세요.
+        </div>
+        {% endif %}
+
+        {% if cart_items %}
+        <hr>
+
+        <div>
+            <button type="button" class="btn btn-danger btn-sm" onclick="CartItems__deleteChecked();">선택삭제</button>
+        </div>
+
+        <form name="CartItemsDeleteForm" class="t-hidden" action="{% url 'cart:delete_items' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="ids" value="">
+        </form>
+        {% endif %}
+    </div>
+</section>
+
+{%endblock%}

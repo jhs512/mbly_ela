@@ -1,0 +1,14 @@
+Django
+pillow
+git+https://github.com/jhs512/django-pydenticon
+django_bootstrap5
+mysqlclient
+django-dotenv
+django_bootstrap5
+lazy-string
+requests
+djangorestframework
+django-cors-headers
+django-debug-toolbar
+djangorestframework-simplejwt
+django-settings-export

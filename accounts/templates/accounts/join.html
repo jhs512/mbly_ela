@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+
+<section class="section-join t-flex-1 t-flex t-items-center t-justify-center">
+    <div class="card t-w-full t-max-w-screen-md mx-4">
+        <div class="card-header"><i class="fas fa-user-plus"></i> 회원가입</div>
+        <div class="card-body">
+            <form method="POST" action="" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                {% bootstrap_button button_type="submit" content="<i class='fas fa-user-plus'></i> 회원가입" %}
+
+                {% url 'main' as main_url %}
+                {% bootstrap_button button_type="link" href=main_url content="취소" button_class="btn-outline-primary" %}
+
+                {% url 'accounts:login' as accounts_login_url %}
+                {% bootstrap_button button_type="link" href=accounts_login_url content="로그인" button_class="btn-outline-primary" %}
+            </form>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
