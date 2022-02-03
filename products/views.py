@@ -3,11 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core import exceptions
 from django.core.paginator import Paginator
-from django.db.models import Prefetch
-from django.http import HttpRequest
+from django.db.models import Prefetch, Case, When
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 # Create your views here.
 from django.views.decorators.http import require_GET, require_POST
+from elasticsearch import Elasticsearch
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView
 from rest_framework.permissions import IsAdminUser
 
@@ -18,6 +19,46 @@ from products.serializers import ProductSerializer, ProductCreateSerializer, Pro
     ProductPatchSerializer, ProductRealCreateSerializer
 from qna.forms import QuestionForm
 from qna.models import Question
+
+
+@require_GET
+def search_by_elastic(request: HttpRequest):
+    keyword, min_price, max_price = "권유리", 100, 1000000
+
+    elasticsearch = Elasticsearch(
+        "http://192.168.56.102:9200", http_auth=('elastic', 'elasticpassword'), )
+
+    response = elasticsearch.sql.query(body={"query":
+                                                 f"""
+        SELECT id
+        FROM sample1_dev__products_product_v2
+        WHERE
+        (
+          MATCH(descriptionNori, '권유리')
+          OR
+          MATCH(nameNori, '권유리')
+          OR
+          MATCH(display_nameNori, '권유리')
+          OR
+          MATCH(categoryNori, '권유리')
+          OR
+          MATCH(market_nameNori, '권유리')
+        )
+        AND (
+          sale_price BETWEEN {min_price} AND {max_price}
+        )
+        ORDER BY score() DESC
+        """})
+
+    print(response)
+
+    product_ids = [row[0] for row in response['rows']]
+
+    order = Case(*[When(id=id, then=pos) for pos, id in enumerate(product_ids)])
+
+    queryset = Product.objects.filter(id__in=product_ids).order_by(order)
+
+    return HttpResponse(queryset.query)
 
 
 # 일반사용자용 뷰 시작
