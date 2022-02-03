@@ -23,34 +23,33 @@ from qna.models import Question
 
 @require_GET
 def search_by_elastic(request: HttpRequest):
-    keyword, min_price, max_price = "권유리", 100, 1000000
+    keyword, min_price, max_price = "소녀시대", 100, 1000000
 
     elasticsearch = Elasticsearch(
         "http://192.168.56.102:9200", http_auth=('elastic', 'elasticpassword'), )
 
-    response = elasticsearch.sql.query(body={"query":
-                                                 f"""
-        SELECT id
-        FROM sample1_dev__products_product_v2
+    elastic_sql = f"""
+        SELECT
+        id
+        FROM
+        sample1_dev___products_product_type_2___v1
         WHERE
         (
-          MATCH(descriptionNori, '권유리')
-          OR
-          MATCH(nameNori, '권유리')
-          OR
-          MATCH(display_nameNori, '권유리')
-          OR
-          MATCH(categoryNori, '권유리')
-          OR
-          MATCH(market_nameNori, '권유리')
+            MATCH(name_nori, '{keyword}')
+            OR
+            MATCH(display_name_nori, '{keyword}')
+            OR
+            MATCH(description_nori, '{keyword}')
+            OR
+            MATCH(cate_item_name_nori, '{keyword}')
+            OR
+            MATCH(market_name_nori, '{keyword}')
         )
-        AND (
-          sale_price BETWEEN {min_price} AND {max_price}
-        )
+        AND sale_price BETWEEN {min_price} AND {max_price}
         ORDER BY score() DESC
-        """})
+    """
 
-    print(response)
+    response = elasticsearch.sql.query(body={"query": elastic_sql})
 
     product_ids = [row[0] for row in response['rows']]
 
@@ -58,7 +57,7 @@ def search_by_elastic(request: HttpRequest):
 
     queryset = Product.objects.filter(id__in=product_ids).order_by(order)
 
-    return HttpResponse(queryset.query)
+    return HttpResponse(queryset)
 
 
 # 일반사용자용 뷰 시작
