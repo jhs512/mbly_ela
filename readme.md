@@ -171,7 +171,7 @@ GET _sql?format=json
 }
 ```
 
-## 두번째 인덱스 안의 데이터 확인
+## 첫번째 인덱스 안의 데이터 확인
 
 ```
 GET _sql?format=json
@@ -291,15 +291,24 @@ PUT /sample1_dev___products_product_type_2___v1/_mappings
 GET /sample1_dev___products_product_type_2___v1
 ```
 
-## 두번째 데이터 개수
+## 두번째 인덱스 안의 데이터 개수 확인
 
 ```
 GET _sql?format=json
 {
   "query": """
-  SELECT *
-  FROM sample1_dev___products_product_type_2___v1
-  ORDER BY score() DESC
+  SELECT COUNT(*) FROM sample1_dev___products_product_type_2___v1
+  """
+}
+```
+
+## 두번째 인덱스 안의 데이터 확인
+
+```
+GET _sql?format=json
+{
+  "query": """
+  SELECT * FROM sample1_dev___products_product_type_2___v1
   """
 }
 ```
