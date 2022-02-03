@@ -42,6 +42,7 @@
 
 # 엘라스틱서치 시작
 - [엘라스틱 서치 개발환경 세팅](https://wiken.io/ken/3374) 참고
+- 개발환경(장고, MySQL, virtualbox, elk on virtualbox)을 모드 세팅하고 http://localhost/products/search_by_elastic/ 로 접속하시면 연동결과를 확인할 수 있습니다.
 
 ---
 
