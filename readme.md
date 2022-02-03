@@ -41,6 +41,7 @@
 ---
 
 # 엘라스틱서치 시작
+- [엘라스틱 서치 개발환경 세팅](https://wiken.io/ken/3374) 참고
 
 ---
 
@@ -105,7 +106,7 @@ PUT /sample1_dev___products_product_type_1___v1
 }
 ```
 
-## 첫번째 타입 설정(엘라스틱 서치 7.0 부터 인덱스에 타입 1개만 설정 가능)
+## 첫번째 인덱스의 타입 설정(엘라스틱 서치 7.0 부터 인덱스에 타입 1개만 설정 가능)
 
 ```
 PUT /sample1_dev___products_product_type_1___v1/_mappings
@@ -226,7 +227,7 @@ PUT /sample1_dev___products_product_type_2___v1
 }
 ```
 
-## 두번째 타입설정
+## 두번째 인덱스의 타입 설정
 
 ```
 PUT /sample1_dev___products_product_type_2___v1/_mappings
