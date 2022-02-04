@@ -56,14 +56,3 @@ class Market(models.Model):
             tag, _ = Tag.objects.get_or_create(name=tag_name)
             tag_list.append(tag)
         return tag_list
-
-    # # 방법 2, 여전히 무식한 방법
-    # @property
-    # def review_point(self):
-    #     return self.product_set.aggregate(Avg('review_point'))['review_point__avg']
-
-    # # 방법 1, 무식한 방법
-    # @property
-    # def review_point(self):
-    #     products = self.product_set.all()
-    #     return sum([product.review_point for product in products]) / len(products)

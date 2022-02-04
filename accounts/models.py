@@ -1,16 +1,25 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from accounts.forms import JoinForm
+
 import os
 import random
 from io import BytesIO
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
+from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.models import AbstractUser
 from django.core.files import File
+from django.core.mail import send_mail
 from django.db import models
 from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.shortcuts import resolve_url
+from django.template.loader import render_to_string
 
 
 class User(AbstractUser):
@@ -61,9 +70,9 @@ class User(AbstractUser):
             email = ""
             password = str(random.randint(1000, 9999))
 
-            user: User = User.objects.create_user(username=username, email=email, password=password, name=name,
-                                                  provider_type_code=provider_type_code,
-                                                  provider_accounts_id=provider_accounts_id)
+            user = User.join(username=username, email=email, password=password, name=name,
+                             provider_type_code=provider_type_code,
+                             provider_accounts_id=provider_accounts_id)
 
             if provider_accounts_thumbnail_image_url:
                 provider_accounts_thumbnail_image_url_parsed = urlparse(provider_accounts_thumbnail_image_url)
@@ -90,3 +99,46 @@ class User(AbstractUser):
         if self.profile_img:
             return self.profile_img.url;
         return resolve_url('pydenticon_image', data=self.username)
+
+    @classmethod
+    def join(cls, username, email, password, name, provider_type_code, provider_accounts_id) -> User:
+        user = User.objects.create_user(username=username, email=email, password=password, name=name,
+                                        provider_type_code=provider_type_code,
+                                        provider_accounts_id=provider_accounts_id)
+
+        cls.after_join(user)
+
+        return user
+
+    @classmethod
+    def join_by_form(cls, form: JoinForm) -> User:
+        user = form.save()
+
+        cls.after_join(user)
+
+        return user
+
+    @staticmethod
+    def after_join(user: User) -> None:
+        user.send_welcome_email()
+
+    # https://github.com/askcompany-kr/django-with-react-rev2/ 참조
+    def send_welcome_email(self):
+        if not self.email:
+            return
+
+        subject = render_to_string("accounts/welcome_email_subject.txt", {
+            "user": self,
+        })
+
+        content = render_to_string("accounts/welcome_email_content.txt", {
+            "user": self,
+        })
+
+        sender_email = settings.WELCOME_EMAIL_SENDER
+        print(subject)
+        print(content)
+        print(sender_email)
+        print(self.email)
+        rs = send_mail(subject, content, sender_email, [self.email], fail_silently=False)
+        print(rs)

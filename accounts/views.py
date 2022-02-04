@@ -60,9 +60,9 @@ def join(request: HttpRequest):
     if request.method == 'POST':
         form = JoinForm(request.POST, request.FILES)
         if form.is_valid():
-            signed_user = form.save()
+            signed_user = User.join_by_form(form)
             auth_login(request, signed_user)
-            messages.success(request, "회원가입 환영합니다.")
+            messages.success(request, "회원가입이 완료되었습니다. 환영합니다.")
             next_url = request.GET.get('next', '/')
             return redirect(next_url)
     else:
