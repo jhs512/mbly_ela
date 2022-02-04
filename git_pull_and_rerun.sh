@@ -2,7 +2,9 @@
 docker exec python__2__test bash -c "cd /data/site_projects/python__2__test/src/ ; git pull origin master"
 
 {
+  docker start python__2__test
   docker exec python__2__test bash -c "cd /data/site_projects/python__2__test/src/ ; python manage.py test --settings=base.settings.prod"
+  docker stop python__2__test
 } || {
   exit 1
 }
