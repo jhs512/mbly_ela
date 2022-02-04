@@ -223,6 +223,7 @@ SETTINGS_EXPORT = [
 ]
 
 # Email with Send Grid
+# https://myaccount.google.com/apppasswords 에서 발급
 GMAIL_EMAIL_API_KEY = os.environ.get("GMAIL_EMAIL_API_KEY")
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'jangka512@gmail.com'
@@ -230,4 +231,4 @@ EMAIL_HOST_PASSWORD = GMAIL_EMAIL_API_KEY
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-WELCOME_EMAIL_SENDER = "jangka512@gmail.com"
+WELCOME_EMAIL_SENDER = EMAIL_HOST_USER
