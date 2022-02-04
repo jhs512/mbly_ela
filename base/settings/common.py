@@ -223,10 +223,10 @@ SETTINGS_EXPORT = [
 ]
 
 # Email with Send Grid
-SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
-EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_HOST_USER = 'apikey'
-EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
+GMAIL_EMAIL_API_KEY = os.environ.get("GMAIL_EMAIL_API_KEY")
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'jangka512@gmail.com'
+EMAIL_HOST_PASSWORD = GMAIL_EMAIL_API_KEY
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 

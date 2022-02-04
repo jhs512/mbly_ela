@@ -136,9 +136,4 @@ class User(AbstractUser):
         })
 
         sender_email = settings.WELCOME_EMAIL_SENDER
-        print(subject)
-        print(content)
-        print(sender_email)
-        print(self.email)
-        rs = send_mail(subject, content, sender_email, [self.email], fail_silently=False)
-        print(rs)
+        send_mail(subject, content, sender_email, [self.email], fail_silently=False)
